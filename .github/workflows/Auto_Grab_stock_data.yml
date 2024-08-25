@@ -19,10 +19,13 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.12'  # 设置为 Python 3.12
 
     - name: Install dependencies
-      run: pip install -r requirements.txt  # 如果你有依赖项，可以使用 requirements.txt
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-distutils
+        pip install -r requirements.txt
 
     - name: Run Python script
       run: python Auto_Grab_stock_data.py  # 执行指定的 Python 脚本
@@ -45,3 +48,9 @@ jobs:
         git add historical_data/
         git commit -m "Update historical data" || echo "No changes to commit"
         git push origin main
+
+    - name: 清除 JsDelivr CDN 缓存
+      uses: egad13/purge-jsdelivr-cache@v1
+      with:
+        url: ${{ steps.purge_urls.outputs.urls }}
+      continue-on-error: true
