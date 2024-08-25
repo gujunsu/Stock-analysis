@@ -1,0 +1,7 @@
+requests
+numpy
+matplotlib
+tkinter
+pandas
+talib
+prettytable
