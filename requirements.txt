@@ -1,4 +1,4 @@
-equests
+requests
 numpy<1.22
 matplotlib<3.10
 pandas
