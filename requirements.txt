@@ -1,7 +1,6 @@
-requests
-numpy
-matplotlib
-tkinter
+equests
+numpy<1.22
+matplotlib<3.10
 pandas
 talib
 prettytable
