@@ -1,4 +1,2 @@
 requests
-numpy<1.22
-pandas
 prettytable
