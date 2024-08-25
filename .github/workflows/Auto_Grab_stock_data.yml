@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'  # 设置为 Python 3.11
+        python-version: '3.12'  # 设置为 Python 3.12
 
     - name: Install build tools
       run: sudo apt-get update && sudo apt-get install -y python3-distutils python3-dev build-essential
@@ -50,3 +50,9 @@ jobs:
         git add historical_data/
         git commit -m "Update historical data" || echo "No changes to commit"
         git push origin main
+
+    - name: 清除 JsDelivr CDN 缓存
+      uses: egad13/purge-jsdelivr-cache@v1
+      with:
+        url: ${{ steps.purge_urls.outputs.urls }}
+      continue-on-error: true
