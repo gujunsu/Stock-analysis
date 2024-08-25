@@ -1,40 +1,38 @@
-name: Python Package
+name: Auto_Grab_stock_data
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   schedule:
-    - cron: "05 15 * * 1-5"
+    - cron: '5 7 * * 1-5' # 对应 UTC 时间，等同于北京时间的15:05
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
     - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
-        python-version: "3.12"
+        python-version: '3.12'
+
+    - name: Install system dependencies
+      run: sudo apt-get install python3-distutils
 
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install python3-distutils -y
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run script
+    - name: Run Python script
       run: python Auto_Grab_stock_data.py
 
-    - name: Push changes
+    - name: Push changes to GitHub
       run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
         git add historical_data/
         git commit -m "Update historical data"
         git push
