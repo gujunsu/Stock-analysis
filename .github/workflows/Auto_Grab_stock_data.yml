@@ -1,58 +1,40 @@
-name: Auto_Grab_stock_data
+name: Python Package
 
 on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   schedule:
-    - cron: '5 15 * * 1-5'  # 周一到周五的下午 15:05 执行
-  workflow_dispatch:  # 允许手动触发
+    - cron: "05 15 * * 1-5"
 
 jobs:
-  run-script:
+  build:
+
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-    - name: 设置时区
-      run: sudo timedatectl set-timezone 'Asia/Shanghai'
-
-    - name: Set up Python
+    - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
-        python-version: '3.12'  # 设置为 Python 3.12
-
-    - name: Install build tools
-      run: sudo apt-get update && sudo apt-get install -y python3-distutils python3-dev build-essential
+        python-version: "3.12"
 
     - name: Install dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install python3-distutils -y
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Python script
-      run: python Auto_Grab_stock_data.py  # 执行指定的 Python 脚本
+    - name: Run script
+      run: python Auto_Grab_stock_data.py
 
-    - name: Check if historical_data directory exists and output its contents
+    - name: Push changes
       run: |
-        if [ -d "historical_data" ]; then
-          echo "Directory exists"
-          ls -R historical_data  # 输出目录内容以确认生成的文件
-        else
-          echo "Directory does not exist"
-          exit 1
-        fi
-
-    - name: Commit and push historical_data
-      run: |
-        git config --local user.email "actions@github.com"
-        git config --local user.name "GitHub Actions"
-        git pull origin main
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
         git add historical_data/
-        git commit -m "Update historical data" || echo "No changes to commit"
-        git push origin main
-
-    - name: 清除 JsDelivr CDN 缓存
-      uses: egad13/purge-jsdelivr-cache@v1
-      with:
-        url: ${{ steps.purge_urls.outputs.urls }}
-      continue-on-error: true
+        git commit -m "Update historical data"
+        git push
