@@ -131,7 +131,7 @@ if __name__ == "__main__":
     conn = sqlite3.connect(f"./all_stocker_data.db")
     cursor = conn.cursor()
     # 查询股票代码
-    cursor.execute("SELECT code,name,industry FROM stocks")
+    cursor.execute("SELECT code,name,market FROM stocks")
     stocks = cursor.fetchall()
     total_stocks = len(stocks)
 
