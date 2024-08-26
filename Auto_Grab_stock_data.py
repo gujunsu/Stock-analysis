@@ -2,10 +2,9 @@ import os
 import sqlite3
 import json
 import requests
-import csv
 import time
 from datetime import datetime
-from prettytable import PrettyTable
+
 
 # ==============================
 # 收盘后获取A股所有股票的收盘数据
@@ -90,17 +89,16 @@ def http_get_stock_data(secid):
 
 
 # 保存数据到文件
-def save_data_to_file(secid, data, exchange, directory):
+def save_data_to_file(data, file_name, directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    file_path = os.path.join(directory, f"{exchange}{secid}.json")
+    file_path = os.path.join(directory, f"{file_name}.json")
 
     with open(file_path, 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
     # print(f"数据已保存到 {file_path}")
     return file_path
-
 
 
 def extract_last_date(data):
