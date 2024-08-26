@@ -2,7 +2,7 @@ name: Auto_Grab_stock_data
 
 on:
   schedule:
-    - cron: '5 7 * * 1-5' # 对应 UTC 时间，等同于北京时间的15:05
+    - cron: '15 15 * * 1-5' # 对应 UTC 时间，等同于北京时间的15:15
   workflow_dispatch:
 
 jobs:
@@ -20,6 +20,9 @@ jobs:
 
     - name: Install system dependencies
       run: sudo apt-get install python3-distutils
+
+    - name: Set timezone to Shanghai
+      run: sudo timedatectl set-timezone 'Asia/Shanghai'
 
     - name: Install dependencies
       run: |
