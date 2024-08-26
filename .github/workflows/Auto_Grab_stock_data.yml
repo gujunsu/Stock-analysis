@@ -26,13 +26,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Ensure historical_data directory exists
+      run: mkdir -p historical_data
+
     - name: Run Python script
       run: python Auto_Grab_stock_data.py
 
-    - name: Push changes to GitHub
+    - name: Commit and push changes to GitHub
       run: |
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
         git add historical_data/
-        git commit -m "Update historical data"
-        git push
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "Update historical data"
+          git push
+        else
+          echo "No changes to commit"
+        fi
