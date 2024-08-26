@@ -33,73 +33,7 @@ def getData(baseUrl, headers):
         result.append([key,value['f12'],value['f14'],value['f2'],value['f3'],value['f4'],value['f5'],value['f6'],value['f7'],value['f15'],value['f16'],value['f17'],value['f18'],value['f10'],value['f8'],value['f9'],value['f23']])
     return result
 
-def printData(result):
-    table = PrettyTable()
-    table.field_names = ["序号", "代码", "名称", "最新价", "涨跌幅", "涨跌额", "成交量(万手)", "成交额(亿)", "振幅", "最高", "最低", "今开", "昨收", "量比", "换手率", "市盈率（动态）", "市净率"]
-    table.add_rows(result)
-    print(table)
 
-def saveData(result):
-    # 获取当前日期并将其格式化为指定的日期字符串
-    today_date = datetime.today().strftime('%Y%m%d')
-    dir_path = './csv'
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-    # 构造带有日期的文件名
-    file_name = f'{dir_path}/A股股票数据_{today_date}.csv'
-    # 使用UTF-8编码打开文件，确保支持中文等特殊字符
-    with open(file_name, 'w', encoding='utf-8', newline='') as file:
-        # 创建 CSV writer，设置 quoting 参数为 QUOTE_NONNUMERIC
-        writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
-        # 写入表头
-        writer.writerow(["序号", "代码", "名称", "最新价", "涨跌幅", "涨跌额", "成交量(万手)", "成交额(亿)", "振幅", "最高", "最低", "今开", "昨收", "量比", "换手率", "市盈率（动态）", "市净率"])
-        # 写入数据
-        writer.writerows(result)
-
-def saveAsSQLite(result):
-    # 获取当前日期并将其格式化为指定的日期字符串
-    today_date = datetime.today().strftime('%Y%m%d')
-    dir_path = './db'
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-    # 构造带有日期的文件名
-    db_name = f'{dir_path}/A股股票数据_{today_date}.db'
-    if os.path.exists(db_name):
-        # 删除文件
-        os.remove(db_name)
-    # 连接到 SQLite 数据库
-    conn = sqlite3.connect(db_name)
-    # 创建游标对象
-    cursor = conn.cursor()
-    # 创建表格（如果不存在）
-    table_name = f'stocks'
-    #table_name = f'stocks_{today_date}'
-    cursor.execute(f'''CREATE TABLE IF NOT EXISTS {table_name} (
-                        id INTEGER PRIMARY KEY,
-                        code TEXT,
-                        name TEXT,
-                        price REAL,
-                        change_rate TEXT,
-                        change_amount REAL,
-                        volume TEXT,
-                        amount TEXT,
-                        amplitude TEXT,
-                        high REAL,
-                        low REAL,
-                        open REAL,
-                        close REAL,
-                        volume_ratio REAL,
-                        turnover_rate TEXT,
-                        pe_ratio REAL,
-                        pb_ratio REAL
-                    )''')
-    # 插入数据
-    cursor.executemany(f'''INSERT INTO {table_name} (code, name, price, change_rate, change_amount, volume, amount, amplitude, high, low, open, close, volume_ratio, turnover_rate, pe_ratio, pb_ratio)
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', [row[1:] for row in result])
-    # 提交事务
-    conn.commit()
-    # 关闭连接
-    conn.close()
 
 def saveAsJSON(result):
     # 获取当前日期并将其格式化为指定的日期字符串
@@ -118,10 +52,8 @@ def a_all_date():
     baseUrl = 'https://22.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=6000&po=1&fid=f3&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048'
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
     result = getData(baseUrl, headers)
-    printData(result)
-    saveData(result)
     saveAsJSON(result)
-    saveAsSQLite(result)
+
 
 
 # 获取股票数据
@@ -157,33 +89,6 @@ def http_get_stock_data(secid):
         return None
 
 
-def print_stock_compre_score_info(data):
-    if data["success"]:
-        stock_info = data["result"]["data"][0]
-        print(f"证券代码: {stock_info['SECURITY_CODE']}")
-        print(f"证券简称: {stock_info['SECURITY_NAME_ABBR']}")
-        print(f"综合评分: {stock_info['COMPRE_SCORE']}")
-        print(f"市场排名: {stock_info['MARKET_RANK']}")
-        print(f"市场评价数: {stock_info['EVALUATE_MARKET_NUM']}")
-        print(f"市场最高评分: {stock_info['MARKET_SCORE_HIGH']}")
-        print(f"市场最低评分: {stock_info['MARKET_SCORE_LOW']}")
-        print(f"市场平均评分: {stock_info['MARKET_SCORE_AVG']}")
-        print(f"股票排名比率: {stock_info['STOCK_RANK_RATIO']}")
-        print(f"行业评价数: {stock_info['EVALUATE_INDUSTRY_NUM']}")
-        print(f"行业股票数: {stock_info['INDUSTRY_STOCK_NUM']}")
-        print(f"行业排名: {stock_info['INDUSTRY_RANK']}")
-        print(f"行业最高评分: {stock_info['INDUSTRY_SCORE_HIGH']}")
-        print(f"行业最低评分: {stock_info['INDUSTRY_SCORE_LOW']}")
-        print(f"行业平均评分: {stock_info['INDUSTRY_SCORE_AVG']}")
-        print(f"市场股票数: {stock_info['MARKET_STOCK_NUM']}")
-        print(f"变动率: {stock_info['CHANGE_RATE']}")
-        print(f"板块代码: {stock_info['BOARD_CODE']}")
-        print(f"板块名称: {stock_info['BOARD_NAME']}")
-    else:
-        print("获取股票信息失败")
-
-
-
 # 保存数据到文件
 def save_data_to_file(secid, data, exchange, directory):
     if not os.path.exists(directory):
@@ -195,7 +100,6 @@ def save_data_to_file(secid, data, exchange, directory):
         json.dump(data, file, indent=4, ensure_ascii=False)
     # print(f"数据已保存到 {file_path}")
     return file_path
-
 
 
 
