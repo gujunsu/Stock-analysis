@@ -2,7 +2,7 @@ name: Auto_Grab_stock_data
 
 on:
   schedule:
-    - cron: '20 5 * * 1-5' # 对应 UTC 时间，等同于北京时间的15:20
+    - cron: '20 7 * * 1-5' # UTC时间的07:20，相当于北京时间的15:20
   workflow_dispatch:
 
 jobs:
