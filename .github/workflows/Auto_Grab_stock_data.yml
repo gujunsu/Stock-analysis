@@ -35,6 +35,21 @@ jobs:
     - name: Run Python script
       run: python Auto_Grab_stock_data.py
 
+    - name: Check and clean up historical_data directory
+      run: |
+        # Count the number of subdirectories in historical_data
+        dir_count=$(find historical_data -mindepth 1 -maxdepth 1 -type d | wc -l)
+        echo "Number of subdirectories: $dir_count"
+
+        # If the count exceeds 8, delete the oldest directory
+        if [ "$dir_count" -gt 8 ]; then
+          oldest_dir=$(ls -1t historical_data | tail -n 1)
+          echo "Deleting oldest directory: $oldest_dir"
+          rm -rf "historical_data/$oldest_dir"
+        else
+          echo "No need to delete any directories."
+        fi
+
     - name: Commit and push changes to GitHub
       run: |
         git config --global user.name 'GitHub Actions'
