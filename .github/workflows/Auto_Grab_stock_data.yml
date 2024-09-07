@@ -50,13 +50,42 @@ jobs:
           echo "No need to delete any directories."
         fi
 
+    - name: Create data_zip directory if it doesn't exist
+      run: mkdir -p data_zip
+
+    - name: Compress historical_data subdirectories
+      run: |
+        for dir in historical_data/*; do
+          if [ -d "$dir" ]; then
+            dir_name=$(basename "$dir")
+            zip -r "data_zip/${dir_name}.zip" "$dir"
+          fi
+        done
+
+    - name: Check and clean up data_zip directory
+      run: |
+        # Count the number of zip files in data_zip
+        zip_count=$(ls data_zip/*.zip 2>/dev/null | wc -l)
+        echo "Number of zip files: $zip_count"
+
+        # If the count exceeds 15, delete the oldest zip files
+        if [ "$zip_count" -gt 15 ]; then
+          oldest_zips=$(ls -1t data_zip/*.zip | tail -n +16)
+          for zip_file in $oldest_zips; do
+            echo "Deleting oldest zip file: $zip_file"
+            rm -f "$zip_file"
+          done
+        else
+          echo "No need to delete any zip files."
+        fi
+
     - name: Commit and push changes to GitHub
       run: |
         git config --global user.name 'GitHub Actions'
         git config --global user.email 'actions@github.com'
-        git add historical_data/
+        git add historical_data/ data_zip/
         if [ -n "$(git status --porcelain)" ]; then
-          git commit -m "Update historical data"
+          git commit -m "Update historical data and zip files"
           git push
         else
           echo "No changes to commit"
