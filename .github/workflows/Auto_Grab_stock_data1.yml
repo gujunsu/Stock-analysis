@@ -1,0 +1,92 @@
+name: Auto_Grab_stock_data
+
+on:
+  schedule:
+    - cron: '20 7 * * 1-5' # UTC时间的07:20，相当于北京时间的15:20
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install system dependencies
+      run: sudo apt-get install python3-distutils
+
+    - name: Set timezone to Shanghai
+      run: sudo timedatectl set-timezone 'Asia/Shanghai'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Ensure historical_data directory exists
+      run: mkdir -p historical_data
+
+    - name: Run Python script
+      run: python Auto_Grab_stock_data.py
+
+    - name: Check and clean up historical_data directory
+      run: |
+        # Count the number of subdirectories in historical_data
+        dir_count=$(find historical_data -mindepth 1 -maxdepth 1 -type d | wc -l)
+        echo "Number of subdirectories: $dir_count"
+
+        # If the count exceeds 8, delete the oldest directory
+        if [ "$dir_count" -gt 8 ]; then
+          oldest_dir=$(ls -1t historical_data | tail -n 1)
+          echo "Deleting oldest directory: $oldest_dir"
+          rm -rf "historical_data/$oldest_dir"
+        else
+          echo "No need to delete any directories."
+        fi
+
+    - name: Create data_zip directory if it doesn't exist
+      run: mkdir -p data_zip
+
+    - name: Compress historical_data subdirectories
+      run: |
+        for dir in historical_data/*; do
+          if [ -d "$dir" ]; then
+            dir_name=$(basename "$dir")
+            zip -r "data_zip/${dir_name}.zip" "$dir"
+          fi
+        done
+
+    - name: Check and clean up data_zip directory
+      run: |
+        # Count the number of zip files in data_zip
+        zip_count=$(ls data_zip/*.zip 2>/dev/null | wc -l)
+        echo "Number of zip files: $zip_count"
+
+        # If the count exceeds 15, delete the oldest zip files
+        if [ "$zip_count" -gt 15 ]; then
+          oldest_zips=$(ls -1t data_zip/*.zip | tail -n +16)
+          for zip_file in $oldest_zips; do
+            echo "Deleting oldest zip file: $zip_file"
+            rm -f "$zip_file"
+          done
+        else
+          echo "No need to delete any zip files."
+        fi
+
+    - name: Commit and push changes to GitHub
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'actions@github.com'
+        git add historical_data/ data_zip/
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "Update historical data and zip files"
+          git push
+        else
+          echo "No changes to commit"
+        fi
