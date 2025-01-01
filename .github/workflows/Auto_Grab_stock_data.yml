@@ -19,7 +19,9 @@ jobs:
         python-version: '3.12'
 
     - name: Install system dependencies
-      run: sudo apt-get install python3-distutils
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-venv  # 安装 python3-venv 以便创建虚拟环境
 
     - name: Set timezone to Shanghai
       run: sudo timedatectl set-timezone 'Asia/Shanghai'
